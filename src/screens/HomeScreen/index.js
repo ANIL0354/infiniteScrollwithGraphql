@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   Text,
   FlatList,
@@ -10,11 +10,11 @@ import {
 import {gql, useQuery} from '@apollo/client';
 import Loader from '../../components/Loader';
 import styles from './styles';
-import {normalize} from '../../theme/responsive';
+import SearchBar from '../../components/SearchBar';
 
-const CHAPTERS_QUERY = gql`
-  query Characters($page: Int) {
-    characters(page: $page) {
+const CHARACTERS_QUERY = gql`
+  query Characters($page: Int, $name: String) {
+    characters(page: $page, filter: {name: $name}) {
       info {
         count
         pages
@@ -71,14 +71,18 @@ function CharactersItem({item, onPress}) {
 }
 const HomeScreen = ({navigation}) => {
   const page = 1;
-  const {
-    data,
-    loading,
-    error,
-    fetchMore,
-    networkStatus,
-    refetch,
-  } = useQuery(CHAPTERS_QUERY, {variables: {page: page}});
+  const [search, setSearch] = useState('');
+
+  const {data, loading, error, fetchMore, networkStatus, refetch} = useQuery(
+    CHARACTERS_QUERY,
+    {
+      variables: {page: page, name: search},
+    },
+  );
+
+  function onSearch(text) {
+    setSearch(text);
+  }
 
   function onEndReached() {
     if (data?.characters?.info?.next) {
@@ -107,41 +111,49 @@ const HomeScreen = ({navigation}) => {
   function onPress(item) {
     navigation.navigate('Detail', {character: item});
   }
-
+  const optimizedOnPress = useCallback(onPress, []);
   function onRefresh() {
     refetch();
   }
 
-  if (loading && !(networkStatus === 4)) return <Loader />;
-
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <FlatList
-        data={data?.characters?.results || []}
-        contentContainerStyle={styles.contentContainer}
-        onEndReachedThreshold={0.2}
-        refreshing={!loading && networkStatus === 4}
-        ListFooterComponent={() => {
-          return data?.characters?.info?.next ? (
-            <Loader size="small" color="#13988E" />
-          ) : null;
-        }}
-        onRefresh={onRefresh}
-        onEndReached={onEndReached}
-        renderItem={({item}) => {
-          return <CharactersItem item={item} onPress={() => onPress(item)} />;
-        }}
-        keyExtractor={item => item.id.toString()}
-        ListEmptyComponent={() => {
-          return (
-            <View style={styles.emptyContainerStyle}>
-              <Text style={styles.emptyText}>
-                {!error ? `No data found` : `Something went wrong`}
-              </Text>
-            </View>
-          );
-        }}
-      />
+      <SearchBar searchPhrase={search} onSearch={onSearch} />
+      {loading && !(networkStatus === 4) ? (
+        <Loader />
+      ) : (
+        <FlatList
+          data={data?.characters?.results || []}
+          contentContainerStyle={styles.contentContainer}
+          onEndReachedThreshold={0.2}
+          refreshing={!loading && networkStatus === 4}
+          ListFooterComponent={() => {
+            return data?.characters?.info?.next ? (
+              <Loader size="small" color="#13988E" />
+            ) : null;
+          }}
+          onRefresh={onRefresh}
+          onEndReached={onEndReached}
+          renderItem={({item}) => {
+            return (
+              <CharactersItem
+                item={item}
+                onPress={() => optimizedOnPress(item)}
+              />
+            );
+          }}
+          keyExtractor={item => item.id.toString()}
+          ListEmptyComponent={() => {
+            return (
+              <View style={styles.emptyContainerStyle}>
+                <Text style={styles.emptyText}>
+                  {!error ? `No data found` : `Something went wrong`}
+                </Text>
+              </View>
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 };

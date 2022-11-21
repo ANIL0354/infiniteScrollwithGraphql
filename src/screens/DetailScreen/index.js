@@ -1,16 +1,20 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Text, View, StatusBar, ScrollView, Image} from 'react-native';
 import styles from './styles';
 
 const DetailScreen = ({route, navigation}) => {
   const {character} = route?.params;
-  navigation.setOptions({
-    headerTitle: () => (
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{character?.name}</Text>
-      </View>
-    ),
-  });
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <View style={styles.header}>
+          <Text style={styles.headerText}>{character?.name}</Text>
+        </View>
+      ),
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />

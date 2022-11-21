@@ -8,15 +8,7 @@
 
 import React from 'react';
 import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {StatusBar} from 'react-native';
 import {ApolloClient, InMemoryCache, ApolloProvider} from '@apollo/client';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -34,19 +26,17 @@ const App: () => Node = () => {
   return (
     <ApolloProvider client={client}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={{headerBackTitleVisible: false}}>
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{title: '📖 The Characters'}}
-          />
-          <Stack.Screen
-            name="Detail"
-            component={DetailScreen}
             options={{
-              headerBackTitleVisible: false,
+              header: () => null,
             }}
           />
+          <Stack.Screen name="Detail" component={DetailScreen} />
         </Stack.Navigator>
         <StatusBar style="light" />
       </NavigationContainer>
