@@ -115,6 +115,15 @@ const HomeScreen = ({navigation}) => {
   function onRefresh() {
     refetch();
   }
+  function ListEmptyComponent() {
+    return (
+      <View style={styles.emptyContainerStyle}>
+        <Text style={styles.emptyText}>
+          {!error ? `No data found` : `Something went wrong`}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
@@ -143,15 +152,7 @@ const HomeScreen = ({navigation}) => {
             );
           }}
           keyExtractor={item => item.id.toString()}
-          ListEmptyComponent={() => {
-            return (
-              <View style={styles.emptyContainerStyle}>
-                <Text style={styles.emptyText}>
-                  {!error ? `No data found` : `Something went wrong`}
-                </Text>
-              </View>
-            );
-          }}
+          ListEmptyComponent={ListEmptyComponent}
         />
       )}
     </SafeAreaView>
