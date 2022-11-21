@@ -1,1 +1,1 @@
-export const PINK = '#ff5dc8'
+export const PINK = '#ff5dc8';
